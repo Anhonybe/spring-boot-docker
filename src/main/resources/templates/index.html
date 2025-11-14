@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación de Prueba</title>
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease forwards;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #ff6b6b;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            animation: fadeIn 1.5s ease forwards;
+        }
+
+        .btn:hover {
+            background-color: #ff4757;
+        }
+
+        /* Animaciones */
+        @keyframes fadeInDown {
+            0% { opacity: 0; transform: translateY(-50px);}
+            100% { opacity: 1; transform: translateY(0);}
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(50px);}
+            100% { opacity: 1; transform: translateY(0);}
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0;}
+            100% { opacity: 1;}
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 2em;
+            }
+            p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenido a la Presentación</h1>
+        <p>Esta es una página de prueba creada en un solo archivo HTML con estilos CSS integrados. Puedes personalizarla para tus presentaciones o proyectos de prueba.</p>
+        <a href="#" class="btn">Comenzar</a>
+    </div>
+</body>
+</html>
