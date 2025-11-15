@@ -2,97 +2,251 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presentación de Prueba</title>
+    <title>CRUD de Productos con Spring Boot</title>
     <style>
-        /* Estilos generales */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            max-width: 600px;
-            width: 90%;
-        }
-
-        h1 {
-            font-size: 3em;
-            margin-bottom: 20px;
-            animation: fadeInDown 1s ease forwards;
-        }
-
-        p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            line-height: 1.5;
-            animation: fadeInUp 1s ease forwards;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background-color: #ff6b6b;
-            color: #fff;
-            font-weight: bold;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            animation: fadeIn 1.5s ease forwards;
-        }
-
-        .btn:hover {
-            background-color: #ff4757;
-        }
-
-        /* Animaciones */
-        @keyframes fadeInDown {
-            0% { opacity: 0; transform: translateY(-50px);}
-            100% { opacity: 1; transform: translateY(0);}
-        }
-
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(50px);}
-            100% { opacity: 1; transform: translateY(0);}
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0;}
-            100% { opacity: 1;}
-        }
-
-        /* Responsive */
-        @media (max-width: 500px) {
-            h1 {
-                font-size: 2em;
-            }
-            p {
-                font-size: 1em;
-            }
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1, h2 { color: #2c3e50; }
+        form, .section { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        input[type="text"], input[type="number"] { padding: 8px; margin: 5px 0; display: block; width: 300px; }
+        button { padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 10px; }
+        button:hover { background-color: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .edit-btn, .delete-btn { background-color: #e74c3c; margin-right: 0; }
+        .edit-btn { background-color: #f39c12; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Bienvenido a la Presentación</h1>
-        <p>Esta es una página de prueba creada en un solo archivo HTML con estilos CSS integrados. Puedes personalizarla para tus presentaciones o proyectos de prueba.</p>
-        <a href="#" class="btn">Comenzar</a>
+
+    <h1>Administrador de Productos (Spring Boot + MySQL)</h1>
+
+    <div class="section">
+        <h2>Crear Nuevo Producto</h2>
+        <form id="formularioCrear">
+            <label for="nombreCrear">Nombre:</label>
+            <input type="text" id="nombreCrear" required>
+            
+            <label for="precioCrear">Precio:</label>
+            <input type="number" id="precioCrear" step="0.01" required>
+            
+            <label for="stockCrear">Stock:</label>
+            <input type="number" id="stockCrear" required>
+            
+            <button type="submit">➕ Guardar Producto</button>
+        </form>
     </div>
+    
+    <div class="section">
+        <h2>Listado de Productos</h2>
+        <button onclick="listarProductos()">🔄 Recargar Lista</button>
+        <table id="tablaProductos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div class="section" id="seccionActualizar" style="display: none;">
+        <h2>Actualizar Producto</h2>
+        <form id="formularioActualizar">
+            <input type="hidden" id="idActualizar">
+            
+            <label for="nombreActualizar">Nombre:</label>
+            <input type="text" id="nombreActualizar" required>
+            
+            <label for="precioActualizar">Precio:</label>
+            <input type="number" id="precioActualizar" step="0.01" required>
+            
+            <label for="stockActualizar">Stock:</label>
+            <input type="number" id="stockActualizar" required>
+            
+            <button type="submit">💾 Guardar Cambios</button>
+            <button type="button" onclick="document.getElementById('seccionActualizar').style.display = 'none'">Cancelar</button>
+        </form>
+    </div>
+    
+    <script>
+        // La URL de tu API de Spring Boot (Asegúrate que el puerto 8080 esté corriendo)
+        const API_URL = 'http://localhost:8080/productos';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            listarProductos();
+            document.getElementById('formularioCrear').addEventListener('submit', crearProducto);
+            document.getElementById('formularioActualizar').addEventListener('submit', actualizarProducto);
+        });
+
+        // ----------------------------------------------------
+        // C - CREATE (POST)
+        // ----------------------------------------------------
+        async function crearProducto(e) {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('nombreCrear').value;
+            const precio = parseFloat(document.getElementById('precioCrear').value);
+            const stock = parseInt(document.getElementById('stockCrear').value);
+            
+            const producto = { nombre, precio, stock };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(producto),
+                });
+
+                if (response.ok) {
+                    alert('Producto creado exitosamente!');
+                    document.getElementById('formularioCrear').reset();
+                    listarProductos();
+                } else {
+                    alert('Error al crear el producto: ' + response.statusText);
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+                alert('No se pudo conectar al servidor. ¿Spring Boot está corriendo?');
+            }
+        }
+
+        // ----------------------------------------------------
+        // R - READ (GET)
+        // ----------------------------------------------------
+        async function listarProductos() {
+            const tbody = document.getElementById('tablaProductos').querySelector('tbody');
+            tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener la lista de productos.');
+                }
+                const productos = await response.json();
+                
+                tbody.innerHTML = ''; // Limpiar la tabla
+                
+                if (productos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No hay productos en la base de datos.</td></tr>';
+                    return;
+                }
+
+                productos.forEach(p => {
+                    const tr = tbody.insertRow();
+                    tr.insertCell().textContent = p.id;
+                    tr.insertCell().textContent = p.nombre;
+                    tr.insertCell().textContent = p.precio.toFixed(2);
+                    tr.insertCell().textContent = p.stock;
+
+                    const accionesCell = tr.insertCell();
+                    
+                    // Botón Editar
+                    const btnEditar = document.createElement('button');
+                    btnEditar.textContent = '✏️ Editar';
+                    btnEditar.className = 'edit-btn';
+                    btnEditar.onclick = () => cargarParaActualizar(p.id);
+                    accionesCell.appendChild(btnEditar);
+
+                    // Botón Eliminar
+                    const btnEliminar = document.createElement('button');
+                    btnEliminar.textContent = '❌ Eliminar';
+                    btnEliminar.className = 'delete-btn';
+                    btnEliminar.onclick = () => eliminarProducto(p.id);
+                    accionesCell.appendChild(btnEliminar);
+                });
+
+            } catch (error) {
+                console.error('Error al listar:', error);
+                tbody.innerHTML = `<tr><td colspan="5">Error: ${error.message}. Asegúrate de que el servidor esté activo.</td></tr>`;
+            }
+        }
+        
+        // Función auxiliar para cargar datos en el formulario de actualización
+        async function cargarParaActualizar(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                const p = await response.json();
+                
+                document.getElementById('idActualizar').value = p.id;
+                document.getElementById('nombreActualizar').value = p.nombre;
+                document.getElementById('precioActualizar').value = p.precio;
+                document.getElementById('stockActualizar').value = p.stock;
+                
+                // Mostrar el formulario de actualización
+                document.getElementById('seccionActualizar').style.display = 'block';
+
+            } catch (error) {
+                alert('Error al cargar datos para actualizar.');
+            }
+        }
+
+        // ----------------------------------------------------
+        // U - UPDATE (PUT)
+        // ----------------------------------------------------
+        async function actualizarProducto(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('idActualizar').value;
+            const nombre = document.getElementById('nombreActualizar').value;
+            const precio = parseFloat(document.getElementById('precioActualizar').value);
+            const stock = parseInt(document.getElementById('stockActualizar').value);
+            
+            const producto = { nombre, precio, stock };
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(producto),
+                });
+
+                if (response.ok) {
+                    alert('Producto actualizado exitosamente!');
+                    document.getElementById('seccionActualizar').style.display = 'none'; // Ocultar formulario
+                    listarProductos();
+                } else {
+                    alert('Error al actualizar el producto: ' + response.statusText);
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+                alert('No se pudo conectar al servidor.');
+            }
+        }
+        
+        // ----------------------------------------------------
+        // D - DELETE (DELETE)
+        // ----------------------------------------------------
+        async function eliminarProducto(id) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar el producto con ID: ${id}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    alert('Producto eliminado con éxito.');
+                    listarProductos();
+                } else {
+                    alert('Error al eliminar el producto.');
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+                alert('No se pudo conectar al servidor.');
+            }
+        }
+    </script>
 </body>
 </html>
